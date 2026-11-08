@@ -8,7 +8,7 @@ export function useMissingScreenshotsToast() {
   const { showErrorToast } = useToast();
 
   useEffect(() => {
-    if (!window.electron) return;
+    if (window.electron?.platform === "android" || typeof window.electron?.onLocalScreenshotsMissing !== "function") return;
 
     return window.electron.onLocalScreenshotsMissing((count) => {
       if (document.visibilityState !== "visible") return;
