@@ -38,6 +38,11 @@ export function useFeature() {
   const [hasFeaturesFailed, setHasFeaturesFailed] = useState(false);
 
   useEffect(() => {
+    if (!window.electron) {
+      setFeatures(readCachedFeatures());
+      setHasFeaturesFailed(true);
+      return;
+    }
     window.electron.hydraApi
       .get<string[]>("/features", { needsAuth: false })
       .then((response) => {
