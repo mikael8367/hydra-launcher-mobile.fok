@@ -48,8 +48,11 @@ export function AchievementNotificationOverlay() {
   }, []);
 
   useEffect(() => {
+    const desktopBridge = globalThis.electron;
+    if (!desktopBridge) return;
+
     const onInAppAchievementUnlocked =
-      globalThis.electron.onInAppAchievementUnlocked;
+      desktopBridge.onInAppAchievementUnlocked;
 
     // Compatibility guard for remote renderer/preload releases on different commits.
     if (typeof onInAppAchievementUnlocked !== "function") {
