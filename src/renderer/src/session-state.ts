@@ -20,6 +20,19 @@ export {
 
 const APP_SESSION_ID_KEY = "app-session-id";
 
+const getBrowserSessionId = (): string => {
+  const existing = sessionStorage.getItem(APP_SESSION_ID_KEY);
+  if (existing) return existing;
+
+  const sessionId =
+    typeof crypto !== "undefined" && "randomUUID" in crypto
+      ? crypto.randomUUID()
+      : `browser-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+
+  sessionStorage.setItem(APP_SESSION_ID_KEY, sessionId);
+  return sessionId;
+};
+
 const shouldPersistFiltersAndSorting = async () => {
   try {
     const userPreferences = (await levelDBService.get(
@@ -37,7 +50,12 @@ const shouldPersistFiltersAndSorting = async () => {
 
 export const clearStateFromPreviousSession = async () => {
   try {
-    const sessionId = await globalThis.electron.getAppSessionId();
+    const desktopBridge = (
+      globalThis as typeof globalThis & { electron?: Electron }
+    ).electron;
+    const sessionId = desktopBridge?.getAppSessionId
+      ? await desktopBridge.getAppSessionId()
+      : getBrowserSessionId();
     if (localStorage.getItem(APP_SESSION_ID_KEY) === sessionId) return;
 
     const persistFiltersAndSorting = await shouldPersistFiltersAndSorting();
