@@ -55,6 +55,7 @@ export function useGamificationFeatureSync() {
   }, [dispatch]);
 
   useEffect(() => {
+    if (!globalThis.window.electron) return;
     let cancelled = false;
     globalThis.window.electron.hydraApi
       .get<string[]>("/features", { needsAuth: false })
@@ -95,7 +96,7 @@ export function useGamificationProgressSync() {
   }, [userId, isEnabled, refreshProgress, dispatch]);
 
   useEffect(() => {
-    if (!userId || !isEnabled) return;
+    if (!globalThis.window.electron || !userId || !isEnabled) return;
 
     let timeout: ReturnType<typeof setTimeout> | undefined;
     const unsubscribe = globalThis.window.electron.onGameSessionSynced(() => {
