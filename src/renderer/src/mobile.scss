@@ -1,0 +1,67 @@
+/*
+ * Touch and text-entry foundations for Android-sized touch screens.
+ * This file deliberately does not replace Hydra's desktop navigation or
+ * pretend that Electron-only services are available on Android.
+ */
+:where(button, a, [role="button"], input, textarea, select, summary) {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+:where(input, textarea, select, [contenteditable="true"], [contenteditable=""]) {
+  -webkit-user-select: text;
+  user-select: text;
+  cursor: text;
+}
+
+:where(button, [role="button"], a, input, textarea, select) {
+  scroll-margin: 12px;
+}
+
+:where(button, [role="button"], a) {
+  -webkit-touch-callout: none;
+}
+
+:where(input, textarea, select, button) {
+  font: inherit;
+}
+
+:where(input, textarea, select) {
+  max-width: 100%;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  overscroll-behavior: none;
+}
+
+body {
+  min-height: 100dvh;
+  overscroll-behavior: none;
+}
+
+:where(input, textarea, [contenteditable="true"], [contenteditable=""]) {
+  caret-color: currentColor;
+}
+
+@media (pointer: coarse) {
+  :where(button, [role="button"], a, input, select) {
+    scroll-margin-block: 16px;
+  }
+
+  :where(input, select, textarea) {
+    font-size: max(16px, 1em);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
