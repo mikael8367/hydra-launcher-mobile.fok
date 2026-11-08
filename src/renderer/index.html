@@ -18,6 +18,17 @@
     </style>
   </head>
   <body>
+    <script>
+      // The desktop renderer expects Electron's platform flag. Capacitor/WebView
+      // does not expose window.electron, so provide an explicit Android marker
+      // before any bundled module (and its imports) executes.
+      if (!window.electron) {
+        Object.defineProperty(window, "electron", {
+          configurable: true,
+          value: Object.freeze({ platform: "android" }),
+        });
+      }
+    </script>
     <div id="root"></div>
     <section id="hydra-boot-error" role="alert">
       <h1>O Hydra não conseguiu iniciar</h1>
