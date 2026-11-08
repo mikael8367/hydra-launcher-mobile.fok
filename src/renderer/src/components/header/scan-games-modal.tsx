@@ -76,7 +76,7 @@ export function ScanGamesModal({
 }: Readonly<ScanGamesModalProps>) {
   const { t } = useTranslation("header");
 
-  const isWindows = window.electron.platform === "win32";
+  const isWindows = window.electron?.platform === "win32";
 
   const [selectedFolders, setSelectedFolders] = useState<string[]>([]);
   const [scanMode, setScanMode] = useState<ScanMode>(
