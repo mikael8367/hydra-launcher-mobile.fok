@@ -174,6 +174,10 @@ export function GameDetailsContextProvider({
   }, [presentation, game, shop, objectId, userDetails?.id]);
 
   const updateGame = useCallback(async () => {
+    if (window.electron?.platform === "android") {
+      setGame(null);
+      return;
+    }
     const requestId = ++gameRequestId.current;
     return window.electron
       .getGameByObjectId(operationalShop, operationalObjectId)
@@ -183,6 +187,13 @@ export function GameDetailsContextProvider({
   }, [operationalShop, operationalObjectId]);
 
   const fetchGameDetails = useCallback(async () => {
+    if (window.electron?.platform === "android") {
+      setShopDetails(null);
+      setStats(null);
+      setAchievements(null);
+      setIsLoading(false);
+      return;
+    }
     if (abortControllerRef.current) abortControllerRef.current.abort();
     const abortController = new AbortController();
     abortControllerRef.current = abortController;
@@ -319,6 +330,7 @@ export function GameDetailsContextProvider({
 
   // Listen for transfer events
   useEffect(() => {
+    if (window.electron?.platform === "android") return;
     const onTransferProgress = (
       _: unknown,
       shop: string,
@@ -410,6 +422,7 @@ export function GameDetailsContextProvider({
   }, [presentation?.title, game?.title, syncHeaderTitle, dispatch]);
 
   useEffect(() => {
+    if (window.electron?.platform === "android") return;
     const unsubscribe = window.electron.onGamesRunning((gamesIds) => {
       const updatedIsGameRunning =
         !!game?.id && gamesIds.some((gameRunning) => gameRunning.id == game.id);
@@ -427,6 +440,7 @@ export function GameDetailsContextProvider({
   }, [game?.id, isGameRunning, updateGame]);
 
   useEffect(() => {
+    if (window.electron?.platform === "android") return;
     const unsubscribe = window.electron.onLibraryBatchComplete(() => {
       refreshGameDetails().catch(() => {});
     });
@@ -511,6 +525,7 @@ export function GameDetailsContextProvider({
             (member) => member.shop === "steam" || member.shop === "epic"
           )
         : [{ objectId: achievementObjectId, shop: achievementShop }];
+    if (window.electron?.platform === "android") return;
     const unsubscribe = members.map((member) =>
       window.electron.onUpdateAchievements(
         member.objectId,
@@ -537,7 +552,7 @@ export function GameDetailsContextProvider({
   }, [achievementObjectId, achievementShop, userDetails, presentation]);
 
   useEffect(() => {
-    if (shop === "custom") return;
+    if (window.electron?.platform === "android" || shop === "custom") return;
 
     let cancelled = false;
 
