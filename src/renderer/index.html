@@ -13,6 +13,8 @@
       #hydra-boot-error { display:none; position:fixed; inset:0; z-index:2147483647; box-sizing:border-box; padding:28px 20px; overflow:auto; background:#101114; color:#fff; font:14px/1.5 system-ui,sans-serif; }
       #hydra-boot-error h1 { font-size:20px; margin:0 0 12px; }
       #hydra-boot-error pre { white-space:pre-wrap; overflow-wrap:anywhere; color:#ffb4ab; }
+      #hydra-copy-error { min-height:44px; padding:10px 16px; border:0; border-radius:10px; background:#7ee787; color:#101114; font:600 15px system-ui,sans-serif; }
+      #hydra-copy-status { min-height:22px; color:#c9d1d9; }
     </style>
   </head>
   <body>
@@ -21,15 +23,55 @@
       <h1>O Hydra não conseguiu iniciar</h1>
       <p>O Android carregou o aplicativo, mas ocorreu um erro antes da interface aparecer. Copie esta mensagem e envie para a equipe de desenvolvimento:</p>
       <pre id="hydra-boot-error-message"></pre>
+      <button id="hydra-copy-error" type="button">Copiar erro</button>
+      <p id="hydra-copy-status" aria-live="polite"></p>
     </section>
     <script>
       (function () {
         var panel = document.getElementById("hydra-boot-error");
         var message = document.getElementById("hydra-boot-error-message");
+        var copyButton = document.getElementById("hydra-copy-error");
+        var copyStatus = document.getElementById("hydra-copy-status");
         var show = function (reason) {
           message.textContent = String(reason && (reason.stack || reason.message) || reason || "Erro desconhecido");
           panel.style.display = "block";
         };
+        var copyFallback = function (text) {
+          var field = document.createElement("textarea");
+          field.value = text;
+          field.setAttribute("readonly", "");
+          field.style.position = "fixed";
+          field.style.opacity = "0";
+          field.style.pointerEvents = "none";
+          document.body.appendChild(field);
+          field.focus();
+          field.select();
+          var copied = false;
+          try { copied = document.execCommand("copy"); } catch (_) { copied = false; }
+          document.body.removeChild(field);
+          return copied;
+        };
+        copyButton.addEventListener("click", async function () {
+          var errorText = message.textContent || "Nenhum erro registrado.";
+          copyButton.disabled = true;
+          copyStatus.textContent = "Copiando...";
+          try {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              await navigator.clipboard.writeText(errorText);
+              copyStatus.textContent = "Erro copiado! Agora você pode colar aqui no chat.";
+            } else if (copyFallback(errorText)) {
+              copyStatus.textContent = "Erro copiado! Agora você pode colar aqui no chat.";
+            } else {
+              copyStatus.textContent = "Não foi possível copiar automaticamente. Selecione e copie o texto do erro acima.";
+            }
+          } catch (_) {
+            copyStatus.textContent = copyFallback(errorText)
+              ? "Erro copiado! Agora você pode colar aqui no chat."
+              : "Não foi possível copiar automaticamente. Selecione e copie o texto do erro acima.";
+          } finally {
+            copyButton.disabled = false;
+          }
+        });
         window.addEventListener("error", function (event) {
           show(event.error || event.message || "Falha ao carregar um arquivo JavaScript");
         });
