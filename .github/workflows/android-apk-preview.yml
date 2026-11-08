@@ -54,6 +54,9 @@ jobs:
       - name: Copy renderer into Android WebView
         run: yarn cap sync android
 
+      - name: Generate Hydra Android launcher icons
+        run: node scripts/generate-android-icons.mjs
+
       - name: Build debug APK
         run: |
           cd android
