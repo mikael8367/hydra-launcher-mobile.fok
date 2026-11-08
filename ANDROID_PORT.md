@@ -41,3 +41,31 @@ and cannot become one by merely adding an APK/Gradle file.
   includes `viewport-fit=cover` for device safe areas.
 - These are renderer adaptations only. They do not yet provide Android native
   services, an installable APK, functional game downloads, or PC-game execution.
+
+## CI validation
+
+The workflow `.github/workflows/android-renderer-validation.yml` runs on pushes
+and pull requests to this migration branch. It installs the locked Yarn
+dependencies, runs the repository TypeScript checks and builds the existing
+renderer/Electron bundles. It uploads the renderer output as a short-lived
+preview artifact.
+
+This workflow is intentionally **not** an Android APK build. The renderer
+still requires the Electron preload contract during startup and throughout
+the application. Packaging it in a WebView before replacing those calls would
+produce a broken app, not a mobile Hydra port.
+
+## Native work still required before Gradle/APK packaging
+
+- Introduce a typed platform contract and migrate renderer services away from
+  direct `window.electron` calls.
+- Implement Android equivalents for preferences/LevelDB, session identity,
+  file selection and scoped storage, notifications, app lifecycle, and
+  deep-link authentication.
+- Port or replace native torrent and filesystem/process services for Android
+  ARM64. Desktop Rust addons and executable launchers cannot be reused as-is.
+- Decide and implement a supported Android game-runtime strategy. Windows and
+  Linux desktop game binaries do not run natively on Android.
+- Only after the renderer starts without Electron and the required services
+  have real implementations should an Android Gradle host and device tests be
+  added.
