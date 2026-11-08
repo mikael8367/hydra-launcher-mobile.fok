@@ -277,3 +277,90 @@ body {
     padding-bottom: calc(52px + env(safe-area-inset-bottom));
   }
 }
+
+/*
+ * Android WebView interaction layer:
+ * - make native controls reliably respond to taps;
+ * - keep text fields editable and compatible with the on-screen keyboard;
+ * - provide visible pressed/focus states without relying on hover;
+ * - enlarge compact desktop controls only on touch-sized viewports.
+ */
+@media (max-width: 720px) {
+  :where(button, [role="button"], a, input, textarea, select, label, summary) {
+    pointer-events: auto;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  :where(button, [role="button"], a, summary, label) {
+    touch-action: manipulation;
+  }
+
+  :where(button, [role="button"], a) {
+    cursor: pointer;
+  }
+
+  :where(button, [role="button"]) {
+    min-height: 44px;
+  }
+
+  :where(button:disabled, [role="button"][aria-disabled="true"]) {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+
+  :where(input:not([type="checkbox"]):not([type="radio"]), textarea, select) {
+    min-height: 44px;
+    max-width: 100%;
+    font-size: 16px !important;
+    touch-action: manipulation;
+    -webkit-user-select: text !important;
+    user-select: text !important;
+  }
+
+  :where(textarea, input, [contenteditable="true"], [contenteditable=""]) {
+    -webkit-user-select: text !important;
+    user-select: text !important;
+    -webkit-touch-callout: default;
+  }
+
+  :where(input[type="checkbox"], input[type="radio"]) {
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    min-height: 20px;
+    accent-color: #16b195;
+    vertical-align: middle;
+  }
+
+  :where(button, [role="button"], a, input, textarea, select, summary):focus-visible {
+    outline: 2px solid #16b195;
+    outline-offset: 2px;
+  }
+
+  :where(button:not(:disabled), [role="button"]:not([aria-disabled="true"]), a):active {
+    filter: brightness(1.18);
+  }
+
+  /* A hover-only affordance is not usable on a touchscreen. */
+  :where(button, [role="button"], a):hover {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Keep the bottom navigation above the Android gesture/navigation area. */
+  .sidebar {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Allow long settings and forms to scroll while the software keyboard is open. */
+  .container,
+  .container__content,
+  [role="dialog"],
+  [data-radix-scroll-area-viewport] {
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  :where(input, textarea, select) {
+    scroll-margin-bottom: 120px;
+  }
+}
