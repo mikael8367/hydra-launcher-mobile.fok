@@ -1,0 +1,11 @@
+{
+  "appId": "com.mikael8367.hydralaunchermobile",
+  "appName": "Hydra Launcher Mobile",
+  "webDir": "out/renderer",
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": false
+  }
+}
