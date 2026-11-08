@@ -18,7 +18,11 @@ export function useGamificationProgress() {
   const isEnabled = useAppSelector((state) => state.gamification.isEnabled);
 
   const refreshProgress = useCallback(async () => {
-    if (!isEnabled) return null;
+    if (
+      !isEnabled ||
+      globalThis.window.electron?.platform === "android" ||
+      typeof globalThis.window.electron?.hydraApi?.get !== "function"
+    ) return null;
     try {
       const response =
         await globalThis.window.electron.hydraApi.get<GamificationProgress>(
@@ -55,7 +59,10 @@ export function useGamificationFeatureSync() {
   }, [dispatch]);
 
   useEffect(() => {
-    if (!globalThis.window.electron) return;
+    if (
+      globalThis.window.electron?.platform === "android" ||
+      typeof globalThis.window.electron?.hydraApi?.get !== "function"
+    ) return;
     let cancelled = false;
     globalThis.window.electron.hydraApi
       .get<string[]>("/features", { needsAuth: false })
@@ -96,7 +103,12 @@ export function useGamificationProgressSync() {
   }, [userId, isEnabled, refreshProgress, dispatch]);
 
   useEffect(() => {
-    if (!globalThis.window.electron || !userId || !isEnabled) return;
+    if (
+      globalThis.window.electron?.platform === "android" ||
+      !userId ||
+      !isEnabled ||
+      typeof globalThis.window.electron?.onGameSessionSynced !== "function"
+    ) return;
 
     let timeout: ReturnType<typeof setTimeout> | undefined;
     const unsubscribe = globalThis.window.electron.onGameSessionSynced(() => {
