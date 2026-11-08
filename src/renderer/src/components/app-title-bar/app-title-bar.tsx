@@ -38,7 +38,10 @@ export function AppTitleBar({
 }: Readonly<AppTitleBarProps>) {
   const { t } = useTranslation(["header", "sidebar"]);
 
-  const { platform, hasNativeWindowDecorations } = window.electron;
+  const desktopBridge = window.electron;
+  const platform = desktopBridge?.platform ?? "android";
+  const hasNativeWindowDecorations =
+    desktopBridge?.hasNativeWindowDecorations ?? true;
 
   // The system draws the window frame and title on macOS and on Linux with
   // native decorations, so only Hydra's own frame shows the name.
@@ -83,14 +86,16 @@ export function AppTitleBar({
         <TitleBarSearch />
       </div>
 
-      <button
-        type="button"
-        className="title-bar__big-picture"
-        onClick={() => window.electron.openBigPictureWindow()}
-      >
-        <VideoIcon size={14} />
-        {t("big_picture", { ns: "sidebar" })}
-      </button>
+      {desktopBridge && (
+        <button
+          type="button"
+          className="title-bar__big-picture"
+          onClick={() => desktopBridge.openBigPictureWindow()}
+        >
+          <VideoIcon size={14} />
+          {t("big_picture", { ns: "sidebar" })}
+        </button>
+      )}
 
       {hasCustomWindowControls && (
         <div className="title-bar__window-controls">
