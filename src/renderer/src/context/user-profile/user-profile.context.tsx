@@ -76,11 +76,15 @@ export const DEFAULT_USER_PROFILE_BACKGROUND = "#151515B3";
 const LIBRARY_REQUEST_TIMEOUT_MS = 15_000;
 const PROFILE_LIBRARY_PAGE_SIZE = 48;
 
-const requestLibraryPage = (url: string) =>
-  window.electron.hydraApi.get<{
+const requestLibraryPage = (url: string) => {
+  if (window.electron?.platform === "android") {
+    return Promise.resolve({ library: [], pinnedGames: [] });
+  }
+  return window.electron.hydraApi.get<{
     library: UserGame[];
     pinnedGames: UserGame[];
   }>(url, { needsAuth: false, timeout: LIBRARY_REQUEST_TIMEOUT_MS });
+};
 
 const fetchLibraryPage = (url: string) =>
   requestLibraryPage(url).catch(() => requestLibraryPage(url));
@@ -190,6 +194,10 @@ export function UserProfileContextProvider({
 
   const getUserStats = useCallback(
     async (filter = DEFAULT_PROFILE_LIBRARY_FILTER) => {
+      if (window.electron?.platform === "android") {
+        setUserStats(null);
+        return;
+      }
       const params = new URLSearchParams();
       appendProfileLibraryFilterParams(params, filter);
 
@@ -214,6 +222,14 @@ export function UserProfileContextProvider({
       reset = true,
       filter = DEFAULT_PROFILE_LIBRARY_FILTER
     ) => {
+      if (window.electron?.platform === "android") {
+        setLibraryGames([]);
+        setPinnedGames([]);
+        setHasMoreLibraryGames(false);
+        setIsLoadingLibraryGames(false);
+        setHasLoadedLibraryGames(true);
+        return;
+      }
       const requestId = reset
         ? ++libraryRequestIdRef.current
         : libraryRequestIdRef.current;
@@ -328,6 +344,7 @@ export function UserProfileContextProvider({
 
   const fetchSouvenirsPage = useCallback(
     async (sortBy: SouvenirSort, skip: number) => {
+      if (window.electron?.platform === "android") return null;
       const language = i18n.language.split("-")[0];
       const path = buildUserSouvenirsPath({
         userId,
@@ -456,6 +473,16 @@ export function UserProfileContextProvider({
   );
 
   const getUserProfile = useCallback(async () => {
+    if (window.electron?.platform === "android") {
+      setUserProfile(null);
+      setUserStats(null);
+      setLibraryGames([]);
+      setPinnedGames([]);
+      setBadges([]);
+      setHasMoreLibraryGames(false);
+      setHasLoadedLibraryGames(true);
+      return;
+    }
     const storedFilter = getProfileLibraryFilter(readStoredProfilePlatform());
 
     getUserStats(storedFilter);
@@ -497,6 +524,10 @@ export function UserProfileContextProvider({
   ]);
 
   const getBadges = useCallback(async () => {
+    if (window.electron?.platform === "android") {
+      setBadges([]);
+      return;
+    }
     const language = i18n.language.split("-")[0];
     const params = new URLSearchParams({ locale: language });
 
