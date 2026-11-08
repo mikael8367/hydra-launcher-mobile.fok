@@ -38,6 +38,13 @@ export default function Home() {
   });
 
   const getCatalogue = useCallback(async (category: CatalogueCategory) => {
+    if (!window.electron?.hydraApi) {
+      setCurrentCatalogueCategory(category);
+      setCatalogue((prev) => ({ ...prev, [category]: [] }));
+      setIsLoading(false);
+      return;
+    }
+
     try {
       setCurrentCatalogueCategory(category);
       setIsLoading(true);
@@ -74,6 +81,8 @@ export default function Home() {
   }, []);
 
   const getRandomGame = useCallback(() => {
+    if (!window.electron?.getRandomGame) return;
+
     window.electron.getRandomGame().then((game) => {
       if (game) setRandomGame(game);
     });
