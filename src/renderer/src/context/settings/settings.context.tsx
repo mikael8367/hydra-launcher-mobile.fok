@@ -174,7 +174,14 @@ export function SettingsContextProvider({
   }, []);
 
   const fetchBlockedUsers = useCallback(async () => {
-    const blockedUsers = await window.electron.hydraApi
+    // The Android WebView preview has no Electron HTTP client.
+    const hydraApi = window.electron?.hydraApi;
+    if (typeof hydraApi?.get !== "function") {
+      setBlockedUsers([]);
+      return;
+    }
+
+    const blockedUsers = await hydraApi
       .get<UserBlocks>("/profile/blocks", {
         params: { take: 12, skip: 0 },
       })
