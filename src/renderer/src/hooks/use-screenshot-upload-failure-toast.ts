@@ -19,7 +19,7 @@ export function useScreenshotUploadFailureToast() {
   const isScreenshotsEnabled = isFeatureEnabled(Feature.Screenshots);
 
   useEffect(() => {
-    if (!isScreenshotsEnabled) return;
+    if (window.electron?.platform === "android" || !isScreenshotsEnabled || typeof window.electron?.getLocalScreenshots !== "function" || typeof window.electron?.onLocalScreenshotsChange !== "function") return;
     const track = createScreenshotUploadOutcomeTracker();
     let hasSeenChange = false;
 
