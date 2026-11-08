@@ -29,7 +29,7 @@ const ScanGamesContext = createContext<ScanGamesContextValue>({
 export const useScanGames = () => useContext(ScanGamesContext);
 
 const isScanSupported =
-  window.electron.platform === "win32" || window.electron.platform === "linux";
+  window.electron?.platform === "win32" || window.electron?.platform === "linux";
 
 /**
  * Owns the scan for installed games above the pages, so a scan and its
@@ -51,7 +51,7 @@ export function ScanGamesProvider({
     includeDefaultDirectories = true,
     addGamesToLibrary = true
   ) => {
-    if (isScanning) return;
+    if (isScanning || !window.electron) return;
 
     const requestId = crypto.randomUUID();
 
@@ -74,7 +74,7 @@ export function ScanGamesProvider({
   };
 
   const handleCancelScan = () => {
-    if (scanRequestId) window.electron.cancelScanInstalledGames(scanRequestId);
+    if (scanRequestId) window.electron?.cancelScanInstalledGames?.(scanRequestId);
   };
 
   useEffect(() => {
