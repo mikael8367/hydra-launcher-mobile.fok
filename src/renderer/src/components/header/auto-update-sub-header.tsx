@@ -20,9 +20,20 @@ export function AutoUpdateSubHeader() {
   };
 
   useEffect(() => {
-    if (!window.electron) return;
+    const electron = window.electron;
 
-    const unsubscribe = window.electron.onAutoUpdaterEvent(
+    // Android uses a minimal Electron compatibility object, not the desktop
+    // updater bridge. Never subscribe to desktop-only APIs in the WebView.
+    if (
+      !electron ||
+      electron.platform === "android" ||
+      typeof electron.onAutoUpdaterEvent !== "function" ||
+      typeof electron.checkForUpdates !== "function"
+    ) {
+      return;
+    }
+
+    const unsubscribe = electron.onAutoUpdaterEvent(
       (event: AppUpdaterEvent) => {
         if (event.type == "update-available") {
           setNewVersion(event.info.version);
@@ -34,7 +45,7 @@ export function AutoUpdateSubHeader() {
       }
     );
 
-    window.electron.checkForUpdates().then((isAutoInstallAvailable) => {
+    electron.checkForUpdates().then((isAutoInstallAvailable) => {
       setIsAutoInstallAvailable(isAutoInstallAvailable);
     });
 
