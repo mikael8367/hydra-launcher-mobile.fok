@@ -26,6 +26,12 @@ export function Hero() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    if (!window.electron?.hydraApi) {
+      setFeaturedGameDetails([]);
+      setIsLoading(false);
+      return;
+    }
+
     if (!featuredCache.has(language)) setIsLoading(true);
 
     window.electron.hydraApi
