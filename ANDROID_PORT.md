@@ -34,7 +34,10 @@ and cannot become one by merely adding an APK/Gradle file.
 ## Current foundation
 
 - `src/renderer/src/mobile.scss` adds touch handling, text selection, input
-  caret behavior, mobile text sizing, and reduced-motion support.
-- The renderer viewport uses the device safe area.
-- This is groundwork only. It does not yet provide Android native services,
-  an installable APK, or working PC-game execution.
+  caret behavior, mobile text sizing, reduced-motion support, and a compact
+  bottom route bar for narrow phone screens while preserving Hydra's labels
+  and icons. Landscape phones receive a shorter navigation bar.
+- `src/renderer/src/app.scss` loads the mobile stylesheet; the HTML viewport
+  includes `viewport-fit=cover` for device safe areas.
+- These are renderer adaptations only. They do not yet provide Android native
+  services, an installable APK, functional game downloads, or PC-game execution.
