@@ -121,7 +121,7 @@ export function CloudGiftNotificationModal() {
   const panelHeight = PANEL_BASE_HEIGHT + messageHeightExtra;
 
   const findPendingGift = useCallback(async () => {
-    if (!userDetails || isCheckingRef.current || notification) return;
+    if (!window.electron || !userDetails || isCheckingRef.current || notification) return;
 
     isCheckingRef.current = true;
 
@@ -185,6 +185,8 @@ export function CloudGiftNotificationModal() {
   }, [findPendingGift]);
 
   useEffect(() => {
+    if (!window.electron) return;
+
     const unsubscribe = window.electron.onSyncNotificationCount(() => {
       void findPendingGift();
     });
@@ -193,6 +195,8 @@ export function CloudGiftNotificationModal() {
   }, [findPendingGift]);
 
   useEffect(() => {
+    if (!window.electron) return;
+
     const unsubscribe = window.electron.onCloudGiftResolved(
       (resolvedGiftId) => {
         dismissedGiftIdsRef.current.add(resolvedGiftId);
@@ -213,6 +217,8 @@ export function CloudGiftNotificationModal() {
 
   useEffect(() => {
     const onOpenGiftModal = (event: Event) => {
+      if (!window.electron) return;
+
       const { notification: requestedNotification } = (
         event as CustomEvent<CloudGiftModalOpenDetail>
       ).detail;
