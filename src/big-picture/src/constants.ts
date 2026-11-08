@@ -5,7 +5,10 @@ export const IS_BROWSER =
   globalThis.Window !== undefined &&
   globalThis.self instanceof globalThis.Window;
 
-export const IS_DESKTOP = IS_BROWSER && !!globalThis.window.electron;
+export const IS_DESKTOP =
+  IS_BROWSER &&
+  !!globalThis.window.electron &&
+  globalThis.window.electron.platform !== "android";
 
 export const MAX_OVERLAY_Z_INDEX = 2_147_483_647;
 
