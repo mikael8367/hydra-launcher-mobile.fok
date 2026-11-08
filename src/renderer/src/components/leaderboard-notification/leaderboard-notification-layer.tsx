@@ -44,9 +44,10 @@ export function LeaderboardNotificationLayer() {
   const [toasts, setToasts] = useState<LayerItem[]>([]);
   const [slams, setSlams] = useState<SlamItem[]>([]);
 
-  useEffect(
-    () =>
-      window.electron.onLeaderboardNotification((notification) => {
+  useEffect(() => {
+    if (!window.electron) return;
+
+    return window.electron.onLeaderboardNotification((notification) => {
         const info = parseLeaderboardNotification(notification);
         if (!info) return;
 
@@ -63,9 +64,8 @@ export function LeaderboardNotificationLayer() {
         setToasts((current) =>
           [...current, { notification, info }].slice(-MAX_TOASTS)
         );
-      }),
-    []
-  );
+      });
+  }, []);
 
   const open = useCallback(
     (item: LayerItem) => {
