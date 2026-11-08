@@ -14,6 +14,10 @@ const freezeGames = (games: LibraryGame[]): LibraryGame[] =>
   games.map((game) => Object.freeze(game));
 
 const startLibraryUpdate = (dispatch: AppDispatch) => {
+  if (!window.electron?.getLibrary) {
+    return Promise.resolve(dispatch(setLibrary([])));
+  }
+
   const update = window.electron
     .getLibrary(true)
     .then((library) => dispatch(setLibrary(freezeGames(library))))
