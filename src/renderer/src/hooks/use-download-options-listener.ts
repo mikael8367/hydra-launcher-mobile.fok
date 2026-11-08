@@ -6,6 +6,7 @@ export function useDownloadOptionsListener() {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
+    if (!window.electron) return;
     const unsubscribe = window.electron.onNewDownloadOptions(
       (gamesWithNewOptions) => {
         for (const { gameId, count } of gamesWithNewOptions) {
