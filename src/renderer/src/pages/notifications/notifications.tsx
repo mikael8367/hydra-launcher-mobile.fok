@@ -146,6 +146,14 @@ export default function Notifications() {
   }, [fetchAllNotifications, filter]);
 
   useEffect(() => {
+    // The Android WebView exposes only a minimal Electron compatibility
+    // object. Local notification events are provided by the desktop main
+    // process, so do not subscribe to them on Android.
+    if (!window.electron || window.electron.platform === "android") return;
+    if (typeof window.electron.onLocalNotificationCreated !== "function") {
+      return;
+    }
+
     const unsubscribe = window.electron.onLocalNotificationCreated(
       (notification) => {
         setLocalNotifications((prev) => [notification, ...prev]);
@@ -159,6 +167,9 @@ export default function Notifications() {
   // window) deletes its FRIEND_REQUEST_RECEIVED notification server-side. Refetch
   // so the stale entry disappears here instead of lingering until reload.
   useEffect(() => {
+    if (!window.electron || window.electron.platform === "android") return;
+    if (typeof window.electron.onSyncFriendRequests !== "function") return;
+
     const unsubscribe = window.electron.onSyncFriendRequests(() => {
       if (userDetails) fetchApiNotifications(0, false, filter);
     });
