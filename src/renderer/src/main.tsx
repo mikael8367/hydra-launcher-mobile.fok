@@ -59,8 +59,6 @@ import BigPictureGame from "../../big-picture/src/pages/game/game";
 import BigPictureGameAchievements from "../../big-picture/src/pages/game-achievements/game-achievements";
 import BigPictureProfile from "../../big-picture/src/pages/profile/profile";
 
-console.log = logger.log;
-
 const desktopBridge = (globalThis as typeof globalThis & { electron?: Electron }).electron;
 const runtimeVersion = desktopBridge?.getVersion
   ? await desktopBridge.getVersion()
