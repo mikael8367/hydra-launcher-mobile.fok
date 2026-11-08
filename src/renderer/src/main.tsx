@@ -61,6 +61,11 @@ import BigPictureProfile from "../../big-picture/src/pages/profile/profile";
 
 console.log = logger.log;
 
+const desktopBridge = (globalThis as typeof globalThis & { electron?: Electron }).electron;
+const runtimeVersion = desktopBridge?.getVersion
+  ? await desktopBridge.getVersion()
+  : "android-web";
+
 Sentry.init({
   dsn: import.meta.env.RENDERER_VITE_SENTRY_DSN,
   integrations: [
@@ -70,7 +75,7 @@ Sentry.init({
   tracesSampleRate: 0.5,
   replaysSessionSampleRate: 0,
   replaysOnErrorSampleRate: 0,
-  release: "hydra-launcher@" + (await globalThis.electron.getVersion()),
+  release: "hydra-launcher@" + runtimeVersion,
 });
 
 globalThis.addEventListener("unhandledrejection", (event) => {
@@ -81,8 +86,13 @@ globalThis.addEventListener("error", (event) => {
   logger.error("Uncaught error", event.error ?? event.message);
 });
 
-const isStaging = await globalThis.electron.isStaging();
-addCookieInterceptor(isStaging);
+const isStaging = desktopBridge?.isStaging
+  ? await desktopBridge.isStaging()
+  : false;
+
+// Electron owns cookie persistence on desktop. In a browser/WebView, keep the
+// platform cookie implementation so web authentication is not overwritten.
+if (desktopBridge) addCookieInterceptor(isStaging);
 
 await clearStateFromPreviousSession();
 
@@ -111,7 +121,11 @@ const userPreferences = (await levelDBService.get(
 if (userPreferences?.language) {
   await i18n.changeLanguage(userPreferences.language);
 } else {
-  globalThis.electron.updateUserPreferences({ language: i18n.language });
+  if (desktopBridge?.updateUserPreferences) {
+    desktopBridge.updateUserPreferences({ language: i18n.language });
+  } else {
+    await levelDBService.put("userPreferences", { language: i18n.language }, null, "json");
+  }
 }
 
 syncDocumentLanguage(i18n.language);
@@ -121,7 +135,7 @@ i18n.on("languageChanged", syncDocumentLanguage);
 // language change must be applied per-window. Subscribe here (the shared entry
 // for all routes) so detached windows — friends, game-launcher, etc. — react
 // too, not just the routes mounted under <App />.
-globalThis.electron.onUserPreferencesUpdated((preferences) => {
+desktopBridge?.onUserPreferencesUpdated?.((preferences) => {
   if (preferences?.language && preferences.language !== i18n.language) {
     i18n.changeLanguage(preferences.language).catch((error) => {
       console.error("Failed to change language", error);
