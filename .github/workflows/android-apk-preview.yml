@@ -1,0 +1,69 @@
+name: Android APK preview
+
+on:
+  push:
+    branches:
+      - android/mobile-foundation
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-apk-preview-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-apk:
+    name: Build Android debug APK (interface preview)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      NODE_OPTIONS: --max-old-space-size=4096
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.21.0
+          cache: yarn
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install project dependencies
+        run: yarn install --frozen-lockfile --ignore-scripts
+
+      - name: Type-check and build Hydra renderer
+        run: yarn build
+
+      - name: Install temporary Capacitor tooling
+        run: npm install --no-save --package-lock=false @capacitor/core@7.4.3 @capacitor/android@7.4.3 @capacitor/cli@7.4.3
+
+      - name: Generate Android project
+        run: npx cap add android
+
+      - name: Copy renderer into Android WebView
+        run: npx cap sync android
+
+      - name: Build debug APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew --no-daemon assembleDebug
+
+      - name: Upload APK preview
+        uses: actions/upload-artifact@v4
+        with:
+          name: hydra-launcher-android-debug-preview
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 7
