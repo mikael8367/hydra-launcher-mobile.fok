@@ -38,13 +38,18 @@ export function useFeature() {
   const [hasFeaturesFailed, setHasFeaturesFailed] = useState(false);
 
   useEffect(() => {
-    if (!window.electron) {
+    // Android runs in a WebView: the platform marker exists, but the
+    // desktop Electron HTTP bridge is intentionally unavailable.
+    const hydraApi = window.electron?.hydraApi;
+    if (
+      window.electron?.platform === "android" ||
+      typeof hydraApi?.get !== "function"
+    ) {
       setFeatures(readCachedFeatures());
       setHasFeaturesFailed(true);
       return;
     }
-    window.electron.hydraApi
-      .get<string[]>("/features", { needsAuth: false })
+    hydraApi.get<string[]>("/features", { needsAuth: false })
       .then((response) => {
         const safeFeatures = ensureArray<string>(response, "/features");
         localStorage.setItem("features", JSON.stringify(safeFeatures));
