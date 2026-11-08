@@ -462,13 +462,27 @@ export function SidebarNotificationsDropdown({
   }, [refreshNotifications, visible]);
 
   useEffect(() => {
-    if (!IS_DESKTOP) return;
+    const electron = globalThis.window.electron;
 
-    const unsubscribeLocal =
-      globalThis.window.electron.onLocalNotificationCreated((notification) => {
+    // Big Picture is also rendered inside the Android WebView. Do not rely
+    // only on IS_DESKTOP: some embedded builds can report a desktop-like
+    // environment while exposing only the minimal Android bridge.
+    if (
+      !IS_DESKTOP ||
+      !electron ||
+      electron.platform === "android" ||
+      typeof electron.onLocalNotificationCreated !== "function" ||
+      typeof electron.onSyncNotificationCount !== "function"
+    ) {
+      return;
+    }
+
+    const unsubscribeLocal = electron.onLocalNotificationCreated(
+      (notification) => {
         setLocalNotifications((current) => [notification, ...current]);
-      });
-    const unsubscribeSync = globalThis.window.electron.onSyncNotificationCount(
+      }
+    );
+    const unsubscribeSync = electron.onSyncNotificationCount(
       (notification) => {
         setApiUnreadCount(notification.notificationCount);
         void fetchApiNotifications();
@@ -484,8 +498,8 @@ export function SidebarNotificationsDropdown({
     );
 
     return () => {
-      unsubscribeLocal();
-      unsubscribeSync();
+      unsubscribeLocal?.();
+      unsubscribeSync?.();
       globalThis.window.removeEventListener(
         "notificationsChanged",
         handleNotificationsChanged
