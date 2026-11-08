@@ -1,0 +1,55 @@
+name: Android migration - renderer validation
+
+on:
+  push:
+    branches:
+      - android/mobile-foundation
+  pull_request:
+    branches:
+      - android/mobile-foundation
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-renderer-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  renderer:
+    name: Type-check and build Hydra renderer
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      NODE_OPTIONS: --max-old-space-size=4096
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.21.0
+          cache: yarn
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install locked dependencies
+        run: yarn install --frozen-lockfile --ignore-scripts
+
+      - name: Type-check desktop and renderer sources
+        run: yarn typecheck
+
+      - name: Build renderer and Electron bundles
+        run: yarn build
+
+      - name: Upload renderer preview (not an APK)
+        uses: actions/upload-artifact@v4
+        with:
+          name: hydra-renderer-preview
+          path: out/renderer/
+          if-no-files-found: error
+          retention-days: 5
