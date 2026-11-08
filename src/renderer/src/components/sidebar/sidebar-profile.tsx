@@ -144,6 +144,10 @@ export function SidebarProfile() {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const fetchLocalNotificationCount = useCallback(async () => {
+    if (!window.electron) {
+      setNotificationCount(0);
+      return;
+    }
     try {
       const localCount = await window.electron.getLocalNotificationsCount();
       setNotificationCount(localCount + apiNotificationCountRef.current);
@@ -153,6 +157,7 @@ export function SidebarProfile() {
   }, []);
 
   const fetchApiNotificationCount = useCallback(async () => {
+    if (!window.electron) return;
     try {
       const response =
         await window.electron.hydraApi.get<NotificationCountResponse>(
@@ -182,6 +187,7 @@ export function SidebarProfile() {
   }, [userDetails, fetchApiNotificationCount, fetchLocalNotificationCount]);
 
   useEffect(() => {
+    if (!window.electron) return;
     const unsubscribe = window.electron.onLocalNotificationCreated(() => {
       fetchLocalNotificationCount();
     });
@@ -213,6 +219,7 @@ export function SidebarProfile() {
   }, [fetchLocalNotificationCount]);
 
   useEffect(() => {
+    if (!window.electron) return;
     const unsubscribe = window.electron.onSyncNotificationCount(
       (notification) => {
         apiNotificationCountRef.current = notification.notificationCount;
@@ -226,7 +233,7 @@ export function SidebarProfile() {
     // Presence bursts fire overlapping refetches; only the latest may write.
     const requestId = ++onlineFriendsRequestIdRef.current;
 
-    if (!userDetails) {
+    if (!window.electron || !userDetails) {
       setOnlineFriendsCount(0);
       return;
     }
@@ -245,6 +252,7 @@ export function SidebarProfile() {
   }, [userDetails]);
 
   useEffect(() => {
+    if (!window.electron) return;
     updateOnlineFriendsCount();
 
     const unsubscribeFriends = globalThis.window.electron.onFriendsUpdated(
@@ -274,6 +282,7 @@ export function SidebarProfile() {
   }, [updateOnlineFriendsCount]);
 
   useEffect(() => {
+    if (!globalThis.window.electron) return;
     const unsubscribe = globalThis.window.electron.onSyncFriendRequests(
       (result) => {
         dispatch(setFriendRequestCount(result.friendRequestCount));
@@ -306,7 +315,7 @@ export function SidebarProfile() {
 
   const handleProfileClick = () => {
     if (userDetails === null) {
-      window.electron.openAuthWindow(AuthPage.SignIn);
+      window.electron?.openAuthWindow?.(AuthPage.SignIn);
       return;
     }
     if (dropdownOpen) {
@@ -314,12 +323,12 @@ export function SidebarProfile() {
     } else {
       setDropdownOpen(true);
       // Warm the friends cache now so the friends window opens populated.
-      void globalThis.window.electron.prefetchFriends();
+      void globalThis.window.electron?.prefetchFriends?.();
     }
   };
 
   useEffect(() => {
-    if (!userDetails) {
+    if (!globalThis.window.electron || !userDetails) {
       setChatUnreadCount(0);
       return;
     }
@@ -360,7 +369,7 @@ export function SidebarProfile() {
 
   const handleFriendsClick = () => {
     closeDropdown();
-    globalThis.window.electron.openFriendsWindow();
+    globalThis.window.electron?.openFriendsWindow?.();
   };
 
   const handleSignOutClick = () => {
