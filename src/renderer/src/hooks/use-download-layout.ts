@@ -8,17 +8,34 @@ export function useDownloadLayout() {
   );
 
   const updateLayoutState = useCallback(async () => {
+    // Android WebView does not provide Electron IPC. Keep the renderer's
+    // default layout state instead of calling an unavailable native method.
+    if (
+      window.electron?.platform === "android" ||
+      typeof window.electron?.getDownloadLayoutState !== "function"
+    ) {
+      setLayoutState(DEFAULT_DOWNLOAD_LAYOUT_STATE);
+      return DEFAULT_DOWNLOAD_LAYOUT_STATE;
+    }
+
     const nextLayoutState = await window.electron.getDownloadLayoutState();
     setLayoutState(nextLayoutState);
     return nextLayoutState;
   }, []);
 
   useEffect(() => {
-    updateLayoutState();
+    void updateLayoutState();
+
+    if (
+      window.electron?.platform === "android" ||
+      typeof window.electron?.onDownloadsUpdated !== "function"
+    ) {
+      return;
+    }
 
     const unsubscribeDownloadsUpdated = window.electron.onDownloadsUpdated(
       () => {
-        updateLayoutState();
+        void updateLayoutState();
       }
     );
 
