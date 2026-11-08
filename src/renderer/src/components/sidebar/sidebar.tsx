@@ -318,7 +318,7 @@ export function Sidebar() {
   }, [uniquePlatforms, selectedPlatforms, handleSelectedPlatformsChange]);
 
   const loadDeckyPluginInfo = async () => {
-    if (window.electron.platform !== "linux") return;
+    if (!window.electron || window.electron.platform !== "linux") return;
 
     try {
       const [info, folderExists] = await Promise.all([
@@ -525,7 +525,7 @@ export function Sidebar() {
                   </li>
                 ))}
 
-              {window.electron.platform === "linux" && homebrewFolderExists && (
+              {window.electron?.platform === "linux" && homebrewFolderExists && (
                 <li className="sidebar__menu-item sidebar__menu-item--decky">
                   <button
                     type="button"
