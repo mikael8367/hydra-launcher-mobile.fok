@@ -198,12 +198,20 @@ export function SettingsContextProvider({
   const clearSourceUrl = () => setSourceUrl(null);
 
   const updateUserPreferences = async (values: Partial<UserPreferences>) => {
-    await window.electron.updateUserPreferences(values);
-    levelDBService
-      .get("userPreferences", null, "json")
-      .then((userPreferences) => {
-        dispatch(setUserPreferences(userPreferences as UserPreferences | null));
-      });
+    if (typeof window.electron?.updateUserPreferences === "function") {
+      await window.electron.updateUserPreferences(values);
+    } else {
+      // Keep Android preview preferences usable without the desktop IPC bridge.
+      const current = await levelDBService.get("userPreferences", null, "json");
+      const next = { ...(current ?? {}), ...values };
+      await levelDBService.set("userPreferences", next, "json");
+    }
+    const userPreferences = await levelDBService.get(
+      "userPreferences",
+      null,
+      "json"
+    );
+    dispatch(setUserPreferences(userPreferences as UserPreferences | null));
   };
 
   return (
