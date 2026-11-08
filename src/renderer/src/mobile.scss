@@ -8,7 +8,7 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-:where(input, textarea, select, [contenteditable="true"], [contenteditable=""]) {
+:where(input, textarea, [contenteditable="true"], [contenteditable=""]) {
   -webkit-user-select: text;
   user-select: text;
   cursor: text;
