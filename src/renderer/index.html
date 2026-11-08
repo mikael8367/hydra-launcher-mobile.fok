@@ -9,9 +9,39 @@
       http-equiv="Content-Security-Policy"
       content="default-src 'self' 'unsafe-inline' * data: local: blob:; media-src 'self' 'unsafe-inline' * data: local: blob:;"
     />
+    <style>
+      #hydra-boot-error { display:none; position:fixed; inset:0; z-index:2147483647; box-sizing:border-box; padding:28px 20px; overflow:auto; background:#101114; color:#fff; font:14px/1.5 system-ui,sans-serif; }
+      #hydra-boot-error h1 { font-size:20px; margin:0 0 12px; }
+      #hydra-boot-error pre { white-space:pre-wrap; overflow-wrap:anywhere; color:#ffb4ab; }
+    </style>
   </head>
   <body>
     <div id="root"></div>
+    <section id="hydra-boot-error" role="alert">
+      <h1>O Hydra não conseguiu iniciar</h1>
+      <p>O Android carregou o aplicativo, mas ocorreu um erro antes da interface aparecer. Copie esta mensagem e envie para a equipe de desenvolvimento:</p>
+      <pre id="hydra-boot-error-message"></pre>
+    </section>
+    <script>
+      (function () {
+        var panel = document.getElementById("hydra-boot-error");
+        var message = document.getElementById("hydra-boot-error-message");
+        var show = function (reason) {
+          message.textContent = String(reason && (reason.stack || reason.message) || reason || "Erro desconhecido");
+          panel.style.display = "block";
+        };
+        window.addEventListener("error", function (event) {
+          show(event.error || event.message || "Falha ao carregar um arquivo JavaScript");
+        });
+        window.addEventListener("unhandledrejection", function (event) {
+          show(event.reason || "Falha em uma operação assíncrona");
+        });
+        window.setTimeout(function () {
+          var root = document.getElementById("root");
+          if (root && !root.firstElementChild) show("A interface React não foi montada após 12 segundos. Verifique se os arquivos JavaScript foram carregados.");
+        }, 12000);
+      })();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
