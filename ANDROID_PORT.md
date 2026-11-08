@@ -69,3 +69,17 @@ produce a broken app, not a mobile Hydra port.
 - Only after the renderer starts without Electron and the required services
   have real implementations should an Android Gradle host and device tests be
   added.
+
+## Persistent browser storage foundation
+
+The renderer's LevelDB service now selects the existing Electron LevelDB bridge
+on desktop and a separate IndexedDB-backed adapter when no Electron bridge is
+present. The mobile adapter supports the same CRUD surface used by the
+renderer: get, put, delete, clear by sublevel, values, and ordered key/value
+iteration. It stores structured-clone values rather than serializing objects
+through localStorage.
+
+This is only the storage adapter. It does not replace the rest of the Electron
+preload API, and the full Hydra application is not yet bootable in Android
+WebView. The Android runtime, native file picker, torrent engine, downloads,
+authentication, and game execution still need their own implementations.
