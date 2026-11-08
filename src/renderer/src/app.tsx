@@ -373,6 +373,7 @@ export function App() {
   }, [fetchUserDetails, updateUserDetails, dispatch, setupWorkWonders]);
 
   useEffect(() => {
+    if (!window.electron) return;
     setupExternalResources();
   }, [setupExternalResources]);
 
