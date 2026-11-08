@@ -50,6 +50,12 @@ export function CloudSubscriptionModal({
 
   useEffect(() => {
     let isMounted = true;
+
+    if (!window.electron) {
+      setIsIframeUnavailable(true);
+      return;
+    }
+
     const getCloudIframeUrl = window.electron.getCloudIframeUrl;
 
     // Remote renderer/preload can be deployed from different commits.
@@ -126,7 +132,7 @@ export function CloudSubscriptionModal({
         event.data?.source === "hydra-cloud" &&
         event.data.type === "subscribe"
       ) {
-        window.electron.openCheckout();
+        window.electron?.openCheckout?.();
         handleClose();
       }
     };
@@ -164,7 +170,7 @@ export function CloudSubscriptionModal({
   const state = isClosing ? "closing" : visible ? "open" : "hidden";
 
   const handleClickOpenCheckout = () => {
-    window.electron.openCheckout();
+    window.electron?.openCheckout?.();
     handleClose();
   };
 
