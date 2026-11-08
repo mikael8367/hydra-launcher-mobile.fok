@@ -86,6 +86,7 @@ export function CloudSyncContextProvider({
 
   const downloadGameArtifact = useCallback(
     async (gameArtifactId: string) => {
+      if (window.electron?.platform === "android") return;
       setRestoringBackup(true);
       window.electron.downloadGameArtifact(objectId, shop, gameArtifactId);
     },
@@ -93,7 +94,7 @@ export function CloudSyncContextProvider({
   );
 
   const getGameArtifacts = useCallback(async () => {
-    if (shop === "custom") {
+    if (window.electron?.platform === "android" || shop === "custom") {
       setArtifacts([]);
       return;
     }
@@ -114,6 +115,10 @@ export function CloudSyncContextProvider({
   }, [objectId, shop]);
 
   const getGameBackupPreview = useCallback(async () => {
+    if (window.electron?.platform === "android") {
+      setBackupPreview(null);
+      return;
+    }
     setLoadingPreview(true);
 
     try {
@@ -132,6 +137,7 @@ export function CloudSyncContextProvider({
 
   const uploadSaveGame = useCallback(
     async (downloadOptionTitle: string | null) => {
+      if (window.electron?.platform === "android") return;
       setUploadingBackup(true);
       window.electron
         .uploadSaveGame(objectId, shop, downloadOptionTitle)
@@ -146,6 +152,7 @@ export function CloudSyncContextProvider({
 
   const toggleArtifactFreeze = useCallback(
     async (gameArtifactId: string, freeze: boolean) => {
+      if (window.electron?.platform === "android") return;
       setFreezingArtifact(true);
       try {
         const endpoint = freeze ? "freeze" : "unfreeze";
@@ -164,6 +171,7 @@ export function CloudSyncContextProvider({
   );
 
   useEffect(() => {
+    if (window.electron?.platform === "android") return;
     const removeUploadCompleteListener = window.electron.onUploadComplete(
       objectId,
       shop,
@@ -199,6 +207,7 @@ export function CloudSyncContextProvider({
 
   const deleteGameArtifact = useCallback(
     async (gameArtifactId: string) => {
+      if (window.electron?.platform === "android") return;
       return window.electron.hydraApi
         .delete<{ ok: boolean }>(`/profile/games/artifacts/${gameArtifactId}`)
         .then(() => {
