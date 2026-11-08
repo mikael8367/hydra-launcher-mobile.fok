@@ -116,6 +116,7 @@ export function App() {
   const [version, setVersion] = useState("");
 
   useEffect(() => {
+    if (!window.electron) return;
     window.electron.getVersion().then(setVersion);
   }, []);
 
@@ -138,6 +139,7 @@ export function App() {
   }, [navigate, location.pathname, dispatch, updateLibrary]);
 
   useEffect(() => {
+    if (!window.electron) return;
     const unsubscribe = window.electron.onUserPreferencesUpdated(
       (preferences) => {
         if (!preferences) {
@@ -159,6 +161,7 @@ export function App() {
   }, [dispatch]);
 
   useEffect(() => {
+    if (!window.electron) return;
     const unsubscribe = window.electron.onDownloadProgress(
       (downloadProgress) => {
         if (
@@ -181,6 +184,7 @@ export function App() {
   }, [clearDownload, setLastPacket, updateLibrary]);
 
   useEffect(() => {
+    if (!window.electron) return;
     const unsubscribe = window.electron.onHardDelete(() => {
       updateLibrary();
     });
@@ -254,6 +258,7 @@ export function App() {
   );
 
   useEffect(() => {
+    if (!window.electron) return;
     const onClick = async (event: MouseEvent) => {
       const userPreferences = await window.electron.getUserPreferences();
       const language = userPreferences?.language ?? "en";
@@ -382,6 +387,7 @@ export function App() {
   }, [dispatch, fetchUserDetails, t, showSuccessToast, updateUserDetails]);
 
   useEffect(() => {
+    if (!window.electron) return;
     const unsubscribe = window.electron.onGamesRunning((gamesRunning) => {
       if (gamesRunning.length) {
         const runningIds = new Set(gamesRunning.map((game) => game.id));
@@ -425,6 +431,7 @@ export function App() {
   }, [dispatch, library, downloadLibrary]);
 
   useEffect(() => {
+    if (!window.electron) return;
     window.electron.getActiveClassicsImport().then((snapshot) => {
       if (snapshot) dispatch(hydrateClassicsScan(snapshot));
     });
@@ -460,6 +467,7 @@ export function App() {
   }, [dispatch, updateLibrary]);
 
   useEffect(() => {
+    if (!window.electron) return;
     window.electron.getActiveRetroArchImport().then((snapshot) => {
       if (snapshot) dispatch(hydrateRetroArchScan(snapshot));
     });
@@ -494,6 +502,7 @@ export function App() {
   }, [dispatch, updateLibrary]);
 
   useEffect(() => {
+    if (!window.electron) return;
     let hasReceivedSyncState = false;
 
     void window.electron.getRemoteLibrarySyncState().then((syncing) => {
@@ -516,6 +525,7 @@ export function App() {
   }, [dispatch, updateLibrary]);
 
   useEffect(() => {
+    if (!window.electron) return;
     const listeners = [
       window.electron.onSignIn(onSignIn),
       window.electron.onLibraryBatchComplete(() => {
@@ -659,6 +669,7 @@ export function App() {
   }, [loadAndApplyTheme]);
 
   useEffect(() => {
+    if (!window.electron) return;
     const unsubscribe = window.electron.onCustomThemeUpdated(() => {
       loadAndApplyTheme();
     });
@@ -667,6 +678,7 @@ export function App() {
   }, [loadAndApplyTheme]);
 
   useEffect(() => {
+    if (!window.electron) return;
     const unsubscribe = globalThis.electron.onNavigate((path) => {
       navigate(path);
     });
@@ -675,6 +687,7 @@ export function App() {
   }, [navigate]);
 
   useEffect(() => {
+    if (!window.electron) return;
     const unsubscribe = globalThis.electron.onOpenAddFriendModal(() => {
       setShowAddFriendModal(true);
     });
@@ -683,6 +696,7 @@ export function App() {
   }, []);
 
   useEffect(() => {
+    if (!window.electron) return;
     const unsubscribe = globalThis.electron.onShowToast((toast) => {
       dispatch(showToast(toast));
     });
@@ -699,6 +713,7 @@ export function App() {
   }, []);
 
   useEffect(() => {
+    if (!window.electron) return;
     const unsubscribe = window.electron.onAchievementUnlocked(
       (suppressSound) => {
         if (!suppressSound) playAudio();
@@ -712,6 +727,7 @@ export function App() {
 
   // Sent here when the chat window is closed or still loading.
   useEffect(() => {
+    if (!window.electron) return;
     return window.electron.onChatMessageSound(() => {
       void playMessageSound();
     });
@@ -724,6 +740,7 @@ export function App() {
   const [isWindowMaximized, setIsWindowMaximized] = useState(false);
 
   useEffect(() => {
+    if (!window.electron) return;
     if (
       window.electron.platform !== "linux" ||
       window.electron.hasNativeWindowDecorations
