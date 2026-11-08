@@ -116,7 +116,10 @@ const userPreferences = (await levelDBService.get(
   "userPreferences",
   null,
   "json"
-)) as { language?: string } | null;
+).catch((error) => {
+  logger.error("Could not read startup preferences; using defaults", error);
+  return null;
+})) as { language?: string } | null;
 
 if (userPreferences?.language) {
   await i18n.changeLanguage(userPreferences.language);
